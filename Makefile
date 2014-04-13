@@ -1,0 +1,2 @@
+COMPONENT=AnimalAppC
+include $(MAKERULES)
