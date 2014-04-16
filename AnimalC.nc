@@ -3,15 +3,18 @@
 
 module AnimalC @safe() {
   
-  uses interface App;
-  uses interface Boot;
-  uses interface Packet;
-  uses interface AMPacket;
-  uses interface AMSend;
-  //SpliControl is a general interface used for starting and stopping componenets. 
-  //but name AMControl is a mnemonic to remind us that the particular instance of SplitControl
-  //is used to control the ActiveMessageG component
-  uses interface SplitControl as AMControl; 
+  uses {
+    interface Leds;
+    interface Boot;
+    interface Packet;
+    interface Receive;
+    interface Timer<TMilli> as MilliTimer;
+    interface AMSend;
+    //SpliControl is a general interface used for starting and stopping componenets. 
+    //but name AMControl is a mnemonic to remind us that the particular instance of SplitControl
+    //is used to control the ActiveMessageG component
+    interface SplitControl as AMControl; 
+  }
 }
 
 
@@ -22,7 +25,7 @@ implementation {
 
   event void Boot.booted() {
     call AMControl.start();
-    dbg("Boot", "Node has started.\n")
+    dbg("Boot", "Node has started.\n");
   }
 
   event void AMControl.startDone(error_t err) {
