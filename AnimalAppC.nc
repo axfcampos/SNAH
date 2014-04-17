@@ -3,19 +3,19 @@
 configuration AnimalAppC {}
 implementation {
 
-  components MainC as LedsC;
+  components MainC;
   components AnimalC as App;
+  components ActiveMessageC;
   components new AMSenderC(AM_RADIO_PING_MSG);
   components new AMReceiverC(AM_RADIO_PING_MSG);
-  components ActiveMessageC;
-  components new TimerMilliC();
+  components new TimerMilliC() as Timer0;
 
-  App.Boot -> MainC.Boot;
-
-  App.Receive -> AMReceiverC;
+  App.Boot -> MainC;
+  
+  App.Packet -> AMSenderC;
+  App.AMPacket -> AMSenderC;
   App.AMSend -> AMSenderC;
   App.AMControl -> ActiveMessageC;
-  App.Packet -> AMSenderC;
-  App.Leds -> LedsC;
-  App.MilliTimer -> TimerMilliC;
+  App.Receive -> AMReceiverC;
+  App.Timer0 -> Timer0;
 }
