@@ -35,7 +35,9 @@ implementation {
       dbg("Boot", "Radio has started successfully!\n");
       //do something
       //doSomething();
-      call Timer0.startPeriodic(250);
+      if(TOS_NODE_ID){
+        call Timer0.startPeriodic(500000);
+      }
     } else {
       //retry
       dbg("Boot", "Radio failed to start, retrying..\n");
@@ -69,17 +71,16 @@ implementation {
   event void AMSend.sendDone(message_t* msg, error_t error){
     dbg("Boot", "Sending packet is done. \n");
     if (&pkt == msg) {
-      dbg("Boot", "No errors accured, Send is !busy");
+      dbg("Boot", "No errors accured, Send is !busy\n");
       busy = FALSE;
     }
   }
 
   event message_t* Receive.receive(message_t* msg, void* payload, uint8_t len){
+    dbg("Boot", "hello");
     if (len == sizeof(PingMsg)) {
       PingMsg* ping_pkt = (PingMsg*)payload;
-      dbg("Boot", 
-          "== Message Arrived!\n nodeid: %d \n number: %d \n", 
-          ping_pkt->nodeid, ping_pkt->number);
+      dbg("Boot", "== Message Arrived!\n nodeid: %d \n number: %d \n", ping_pkt->nodeid, ping_pkt->number);
     }
   }
 
