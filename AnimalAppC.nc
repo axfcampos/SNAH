@@ -6,16 +6,18 @@ implementation {
   components MainC;
   components AnimalC as App;
   components ActiveMessageC;
-  components new AMSenderC(AM_RADIO_PING_MSG);
-  components new AMReceiverC(AM_RADIO_PING_MSG);
+  components new AMSenderC(AM_PINGMSG);
+  components new AMReceiverC(AM_PINGMSG) as Receiver0;
+  components new AMReceiverC(AM_GETFOODDAILYDOSAGE) as Receiver1;
   components new TimerMilliC() as Timer0;
 
-  App.Boot -> MainC;
+  App.Boot -> MainC.Boot;
   
   App.Packet -> AMSenderC;
-  App.AMPacket -> AMSenderC;
+  //App.AMPacket -> AMSenderC;
   App.AMSend -> AMSenderC;
   App.AMControl -> ActiveMessageC;
-  App.Receive -> AMReceiverC;
-  App.Timer0 -> Timer0;
+  App.ReceivePing -> Receiver0;
+  App.ReceiveFoodQuery -> Receiver1;
+  App.MilliTimer -> Timer0;
 }
