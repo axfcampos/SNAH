@@ -36,6 +36,7 @@ def main(argv):
 
     # === add debug and log channels ===
     t.addChannel("Boot", sys.stdout)
+    t.addChannel("FoodInfo", open("food_info.txt", "w"))
 
 
     # === prompt for how many motes ===
@@ -118,6 +119,11 @@ def command_prompt():
                 print "if ( <mote_id> = 0 ) ---> update to all motes"
         elif cmd[0] == "getFood":
             print "gonna get food"
+            if len(cmd) == 2:
+                getFood(int(cmd[1]))
+            else:
+                print "command usage getFood <mote_id>"
+                print "if ( <mote_id = 0 ) ---> get from all motes "
         elif cmd[0] == "ping":
             ping()
         elif cmd[0] == "exit":
@@ -142,6 +148,20 @@ def updateFood(mote_id, food):
 
     print "Delivering " + str(msg) + " to 0 at " + str(t.time() +3)
     pkt.deliver(0, t.time() + 3)
+
+def getFood(mote_id):
+    msg = GetFoodDailyDosage()
+    msg.set_mote_dest(mote_id)
+    msg.set_msg_id(random.randint(0, pow(2,32)-1))
+
+    pkt = t.newPacket()
+    pkt.setData(msg.data)
+    pkt.setType(msg.get_amType())
+    pkt.setDestination(0)
+
+    print "Delivering " + str(msg) + " to 0 at " + str(t.time() +3)
+    pkt.deliver(0, t.time() + 3)
+
 
 def get_state_info(mote_id):
     try:
