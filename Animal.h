@@ -4,7 +4,7 @@
 enum {
   AM_PINGMSG = 5,
   AM_GETFOODDAILYDOSAGE = 4,
-  AM_UPDATEFOODDAILYDOSAGE = 32,
+  AM_UPDATEFOODDAILYDOSAGE = 6,
   MAX_ANIMALS = 10000,
 };
 
@@ -14,15 +14,15 @@ typedef nx_struct PingMsg{
 } PingMsg;
 
 typedef nx_struct GetFoodDailyDosage{
-  //nx_uint32_t msg_id; //to denie rebroadcast
+  nx_uint32_t msg_id; //to denie rebroadcast
   nx_uint16_t mote_dest; //if 0 deliver to all
-  nx_uint8_t foodkg; //amount of food eaten in kg
+  nx_uint8_t food_kg; //amount of food eaten in kg
 } GetFoodDailyDosage;
 
 typedef nx_struct UpdateFoodDailyDosage{
   nx_uint32_t msg_id; //to denie rebroadcast
   nx_uint16_t mote_dest; //if 0 deliver to all
-  nx_uint8_t newFoodMaxkg; //new max amount of daily food 
+  nx_uint8_t new_food_maxkg; //new max amount of daily food 
 } UpdateFoodDailyDosage;
 
 

@@ -1,5 +1,9 @@
+//sup
 #include "Timer.h"
 #include "Animal.h"
+#include <pthread.h>
+#include <time.h>
+#include <stdlib.h>
 
 module AnimalC @safe() {
   
@@ -27,18 +31,22 @@ implementation {
   //signatures
   bool check_ok_for_broadcast(int msg_id);
   void broadcastFoodUpdate(message_t* msg);
-
+  void add_to_broadcast_checker(int msg_id);
+  
   //vars
   bool busy = FALSE; //keep track if radio is busy sending
   message_t packet; //to hold data for transmission
-  float max_food; //daily max food intake
-  float food_intake; //amount of food eaten today
+  float max_food = 10.0; //daily max food intake
+  float food_intake = 10.0; //amount of food eaten today
   int last_msg[MAX_ANIMALS];
-
-
+  int last_msg_i = 0;
+  pthread_mutex_t count_mutex;
+    
+  
   //funcs
   event void Boot.booted(){
     dbg("Boot", "=== Node has booted successfully!\n");
+    srand(time(NULL)); //starts random number gen. int r = rand()
     call AMControl.start();
   }
 
@@ -65,7 +73,8 @@ implementation {
     dbg("Boot", "Sending packet is done. \n");
     if (&packet == msg) {
       dbg("Boot", "No errors accured, Send is available\n");
-      busy = FALSE;
+      //busy = FALSE;
+      pthread_mutex_unlock(&count_mutex);
     }
   }
   event void SendFoodQuery.sendDone(message_t* msg, error_t error){
@@ -77,10 +86,12 @@ implementation {
   }
   event void SendFoodUpdate.sendDone(message_t* msg, error_t error){
     dbg("Boot", "Sending packet is done. \n");
-    if (&packet == msg) {
-      dbg("Boot", "No errors accured, Send is available\n");
-      busy = FALSE;
-    }
+    //if (&packet == msg) {
+      //dbg("Boot", "No errors accured, Send is available\n");
+      //busy = FALSE;
+      pthread_mutex_unlock(&count_mutex);
+    //}
+    dbg("Boot", "unlocked mutex");
   }
   event message_t* ReceivePing.receive(message_t* msg, void* payload, uint8_t len){
     dbg("Boot", "\n hello \n");
@@ -89,11 +100,12 @@ implementation {
       PingMsg* ping_pkt = (PingMsg*)payload;
       dbg("Boot", "== Message Arrived!\n number: %d \n", ping_pkt->number);
     }
+    return msg;
   }
 
   event message_t* ReceiveFoodQuery.receive(message_t* msg, void* payload, uint8_t len){
-    dbg("Boot", "IVE ARRIVED!!!");
-
+    dbg("Boot", "");
+    return msg;
   }
 
   event message_t* ReceiveFoodUpdate.receive(message_t* msg, void* payload, uint8_t len){
@@ -102,36 +114,39 @@ implementation {
     if (len == sizeof(UpdateFoodDailyDosage)){
       UpdateFoodDailyDosage* pkt = (UpdateFoodDailyDosage*)payload; //cast
       dbg("Boot", "CHEGOU AQUI\n"); 
-      if(!check_ok_for_broadcast){
+      if(!check_ok_for_broadcast(pkt->msg_id)){
+        //already broadcasted message. dont broadcast again
+        dbg("Boot", "Already broadcast. Discarding....");
         return msg;
+      } else {
+        add_to_broadcast_checker(pkt->msg_id);
       }
       dbg("Boot", "here here here\n");
       if(pkt->mote_dest == 0){ //if 0, update mine and broadcast (save id to avoid rebroadcast)
-        max_food = pkt->newFoodMaxkg;
+        max_food = pkt->new_food_maxkg;
         broadcastFoodUpdate(msg); 
         
       } else {
         if(pkt->mote_dest == TOS_NODE_ID){ //if its me
-          max_food = pkt->newFoodMaxkg;
+          max_food = pkt->new_food_maxkg;
         }
       }
-
+    } else {
+      dbg("Boot", "Something went terribly wrong!");
     }
+    return msg;
   }
 
 
   //aux functions
   void broadcastFoodUpdate(message_t* msg){
     dbg("Boot", "here here\n");
-    if(!busy){
+    pthread_mutex_lock(&count_mutex); 
       if (call SendFoodUpdate.send(
             AM_BROADCAST_ADDR, msg, sizeof(UpdateFoodDailyDosage)) == SUCCESS){
         dbg("Boot", "forward message");
-        busy = TRUE;
+        //busy = TRUE;
       }
-    } else {
-      dbg("Boot", "broadcast failed. ITS BUSY!");
-    }
   }
   
   
@@ -144,6 +159,13 @@ implementation {
     }
     
     return TRUE; //ok for broadcast
+  }
+
+  void add_to_broadcast_checker(int msg_id){
+    
+    last_msg[last_msg_i] = msg_id;
+    msg_id = (msg_id + 1) % MAX_ANIMALS;
+
   }
 
 }

@@ -9,6 +9,7 @@ import time
 import os
 import random
 from TOSSIM import *
+from tinyos.tossim.TossimApp import *
 from threading import Thread
 from PingMsg import *
 from UpdateFoodDailyDosage import *
@@ -18,13 +19,15 @@ def main(argv):
 
 
     #vars
-    global n_nodes, t, r, msg_id
+    global n_nodes, t, r, msg_id, nodeList
     MAX_NODES = 10000
     nodeList = []
     random.seed()
 
-    t = Tossim([])
-    what = t.mac()
+
+    n = NescApp()
+    t = Tossim(n.variables.variables())
+    #what = t.mac()
     r = t.radio()
 
     # === Welcome
@@ -102,6 +105,11 @@ def command_prompt():
 
         if len(cmd) == 0:
             continue
+        elif cmd[0] == "get":
+            if(len(cmd) < 2):
+                print "wrong input. get <mote_id>"
+                continue
+            get_state_info(cmd[1])
         elif cmd[0] == "updateFood":
             if len(cmd) == 3:
                 updateFood(int(cmd[1]), int(cmd[2]))
@@ -123,9 +131,9 @@ def command_prompt():
 
 def updateFood(mote_id, food):
     msg = UpdateFoodDailyDosage()
-    msg.set_msgId = random.randint(0, pow(2,32)- 1)
-    msg.set_newFoodMaxkg = food
-    msg.set_mote_dest = mote_id
+    msg.set_msg_id(random.randint(0, pow(2,32)- 1))
+    msg.set_new_food_maxkg(food)
+    msg.set_mote_dest(mote_id)
 
     pkt = t.newPacket()
     pkt.setData(msg.data)
@@ -135,8 +143,20 @@ def updateFood(mote_id, food):
     print "Delivering " + str(msg) + " to 0 at " + str(t.time() +3)
     pkt.deliver(0, t.time() + 3)
 
+def get_state_info(mote_id):
+    try:
+        mote = nodeList[int(mote_id)]
+        status = mote.isOn()
+        max_food = mote.getVariable("AnimalC.max_food")
+        food_intake = mote.getVariable("AnimalC.food_intake")
+
+        print "Status: " + str(status) + " | Max_food: " + str(max_food.getData()) + " | food_in: " + str(food_intake.getData())
+    except Exception:
+        print "error.... how to use get: get <mote_id>"
+
 def help_me():
     print "- h                                 *** for help"
+    print "- get <mote_id>                     *** get state info of mote"
     print "- ping                              *** to ping all nodes"
     print "- exit                              *** to exit"
     print "- updateFood <mote_id> <amount>     *** to update daily food. mote_id 0 for all"
