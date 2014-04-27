@@ -13,6 +13,7 @@ from tinyos.tossim.TossimApp import *
 from threading import Thread
 from PingMsg import *
 from UpdateFoodDailyDosage import *
+from UpdateFeedingSpot import *
 from Proximity import *
 #from GetFoodDailyDosage import *
 
@@ -119,8 +120,18 @@ def command_prompt():
             else:
                 print "command usage updateFood <mote_id> <amount>"
                 print "if ( <mote_id> = 0 ) ---> update to all motes"
+        elif cmd[0] == "updateSpotFood":
+            if len(cmd) == 3:
+                updateSpotFood(int(cmd[1]), int(cmd[2]))
+            else:
+                print "wrong command usage. type h for help"
         elif cmd[0] == "ping":
             ping()
+        elif cmd[0] == "getSpotFood":
+            if len(cmd) == 2:
+                getSpotFood(int(cmd[1]))
+            else:
+                print "wrong command usage. type h for help"
         elif cmd[0] == "prox":
             if len(cmd) < 2:
                 print "wrong input, prox <mote_id>"
@@ -149,6 +160,22 @@ def updateFood(mote_id, food):
     print "Delivering " + str(msg) + " to 0 at " + str(t.time() +3)
     pkt.deliver(0, t.time() + 3)
 
+def updateSpotFood(spot_id, food):
+    msg = UpdateFeedingSpot()
+    msg.set_food_g(food)
+    msg.set_spot_id(spot_id)
+    msg.set_msg_id(random.randint(0, pow(2,32)-1))
+
+    pkt = t.newPacket()
+    pkt.setData(msg.data)
+    pkt.setType(msg.get_amType())
+    pkt.setDestination(0)
+
+    print "Delivering " + str(msg) + " to 0 at " + str(t.time() + 3)
+    pkt.deliver(0, t.time() + 3)
+
+
+
 def prox(mote_id):
     msg = Proximity()
     pkt = t.newPacket()
@@ -171,6 +198,15 @@ def prox(mote_id):
 #    print "Delivering " + str(msg) + " to 0 at " + str(t.time() +3)
 #    pkt.deliver(0, t.time() + 3)
 
+def getSpotFood(spot_id):
+    try:
+        s = "fs" + str(spot_id)
+        f = open(s, "r")
+        for l in f:
+            v = l.split()
+        print "Spot " + str(spot_id) + " Max_food: " + str(v[1]) + " Current_food: " + str(v[0])
+    except Exception:
+        print "error, type h for help"
 
 def get_state_info(mote_id):
     try:

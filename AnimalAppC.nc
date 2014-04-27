@@ -12,6 +12,7 @@ implementation {
   components new AMSenderC(AM_UPDATEFOODDAILYDOSAGE) as Sender2;
   //components new AMSenderC(AM_GETFOODRESPONSE) as Sender3;
   components new AMSenderC(AM_ANIMALINFO) as Sender4;
+  components new AMSenderC(AM_UPDATEFEEDINGSPOT) as Sender5;
 
   components new AMReceiverC(AM_PINGMSG) as Receiver0;
   //components new AMReceiverC(AM_GETFOODDAILYDOSAGE) as Receiver1;
@@ -19,6 +20,7 @@ implementation {
   //components new AMReceiverC(AM_GETFOODRESPONSE) as Receiver3;
   components new AMReceiverC(AM_ANIMALINFO) as Receiver4;
   components new AMReceiverC(AM_PROXIMITY) as Receiver5;
+  components new AMReceiverC(AM_UPDATEFEEDINGSPOT) as Receiver6;
 
   components new TimerMilliC() as Timer0;
   components new TimerMilliC() as Timer1;
@@ -38,6 +40,7 @@ implementation {
   App.SendFoodUpdate -> Sender2;
   //App.SendFoodResponse -> Sender3;
   App.SendAnimalInfo -> Sender4;
+  App.SendUpdateFeedingSpot -> Sender5;
 
   App.AMControl -> ActiveMessageC;
   
@@ -47,6 +50,7 @@ implementation {
   //App.ReceiveFoodResponse -> Receiver3;
   App.ReceiveAnimalInfo -> Receiver4;
   App.ReceiveProximity -> Receiver5;
+  App.ReceiveUpdateFeedingSpot -> Receiver6;
 
   App.BroadcastTimer -> Timer0;
   App.GpsTimer -> Timer1;

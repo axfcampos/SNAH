@@ -1,0 +1,16 @@
+node_id: 2 || GPS-la: 21 lo: 22 || food_eaten: 0 || msg_id: 675220580
+node_id: 1 || GPS-la: 11 lo: 12 || food_eaten: 0 || msg_id: 2021762716
+node_id: 2 || GPS-la: 21 lo: 22 || food_eaten: 0 || msg_id: 2055914119
+node_id: 1 || GPS-la: 11 lo: 12 || food_eaten: 0 || msg_id: 781898059
+node_id: 2 || GPS-la: 21 lo: 22 || food_eaten: 0 || msg_id: 334526617
+node_id: 1 || GPS-la: 11 lo: 12 || food_eaten: 0 || msg_id: 1238096886
+node_id: 2 || GPS-la: 21 lo: 22 || food_eaten: 0 || msg_id: 1452755398
+node_id: 1 || GPS-la: 11 lo: 12 || food_eaten: 0 || msg_id: 109684099
+node_id: 2 || GPS-la: 21 lo: 22 || food_eaten: 0 || msg_id: 1216221390
+node_id: 1 || GPS-la: 11 lo: 12 || food_eaten: 0 || msg_id: 1734849312
+node_id: 1 || GPS-la: 11 lo: 12 || food_eaten: 0 || msg_id: 2118297036
+node_id: 2 || GPS-la: 21 lo: 22 || food_eaten: 0 || msg_id: 903812725
+node_id: 1 || GPS-la: 11 lo: 12 || food_eaten: 0 || msg_id: 944283032
+node_id: 2 || GPS-la: 21 lo: 22 || food_eaten: 0 || msg_id: 1663545652
+node_id: 1 || GPS-la: 11 lo: 12 || food_eaten: 0 || msg_id: 1901225353
+node_id: 2 || GPS-la: 21 lo: 22 || food_eaten: 0 || msg_id: 530639231

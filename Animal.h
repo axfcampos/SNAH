@@ -6,7 +6,8 @@ enum {
   //AM_GETFOODDAILYDOSAGE = 4,
   AM_UPDATEFOODDAILYDOSAGE = 6,
   AM_ANIMALINFO = 4,
-  AM_PROXIMITY,
+  AM_PROXIMITY = 3,
+  AM_UPDATEFEEDINGSPOT = 2,
   //AM_GETFOODRESPONSE = 3,
   MAX_ANIMALS = 10000,
 };
@@ -43,7 +44,7 @@ typedef nx_struct AnimalInfo {
 
 typedef nx_struct UpdateFeedingSpot {
   nx_uint16_t food_g; //food in grams
-  nx_uint16_t msg_id; //unique
+  nx_uint32_t msg_id; //unique
   nx_uint8_t spot_id; //spot id
 } UpdateFeedingSpot;
 

@@ -4,6 +4,7 @@
 #include <pthread.h>
 #include <time.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 
 module AnimalC @safe() {
@@ -21,6 +22,7 @@ module AnimalC @safe() {
     interface AMSend as SendFoodUpdate;
     //interface AMSend as SendFoodResponse;
     interface AMSend as SendAnimalInfo;
+    interface AMSend as SendUpdateFeedingSpot;
 
     interface SplitControl as AMControl; //to start radio
     
@@ -30,6 +32,7 @@ module AnimalC @safe() {
     //interface Receive as ReceiveFoodResponse; //receive food response and fwd
     interface Receive as ReceiveAnimalInfo;
     interface Receive as ReceiveProximity;
+    interface Receive as ReceiveUpdateFeedingSpot;
 
     interface Timer<TMilli> as BroadcastTimer;
     interface Timer<TMilli> as GpsTimer;
@@ -53,6 +56,7 @@ implementation {
   void eat_from_spot(int food_amount, int spot_id);
   void updateFeedingSpot(int new_max_food, int spot_id);
   void broadcast_animal_info();
+  void fwd_broadcast_update_spot(message_t* msg);
   //void broadcastFoodQuery(message_t* msg);
   //void start_broadcastFoodResp();
   //void fwd_broadcastFoodResp(message_t* msg);
@@ -72,18 +76,20 @@ implementation {
   AnimalInfo* animal_info_packet;
 
   //gps
-  int gps_la;
-  int gps_lo;
+  uint32_t gps_la;
+  uint32_t gps_lo;
   FILE* gps_file;
   char filename[4];
   
   //feeding spot
   bool proximity;
   FILE* feeding_spot;
-  float max_food; //daily max food intake
-  float food_intake; //amount of food eaten today
-  float eating_habit; //amount of it eats per meal
+  int max_food; //daily max food intake
+  int food_intake; //amount of food eaten today
+  int eating_habit; //amount of it eats per meal
   char food_filename[3];
+  //int aux_value;
+  //int aux_max;
   //GetFoodResponse *gfr_pkt;
     
   
@@ -92,9 +98,11 @@ implementation {
     dbg("Boot", "=== Node has booted successfully!\n");
     srand(time(NULL)); //starts random number gen. int r = rand()
     max_food = 1200; //grams
-    food_intake = 0.0;
-    eating_habit = 400.0; //how much it eats each time
+    food_intake = 0;
+    eating_habit = 400; //how much it eats each time
     proximity = FALSE;
+    //aux_value = 0;
+    //aux_max = 0;
     gps_la = 38737107; //init values
     gps_lo = -93028921; //init values
     call AMControl.start();
@@ -105,7 +113,7 @@ implementation {
       dbg("Boot", "Radio has started successfully!\n");
       if(TOS_NODE_ID != 0){
         call GpsTimer.startPeriodic(50000);
-        call FSpotProximityTimer.startPeriodic(40000);
+        call FSpotProximityTimer.startPeriodic(40000000);
         call BroadcastTimer.startPeriodic(200000 * (10 - TOS_NODE_ID));
       }
     } else {
@@ -422,7 +430,7 @@ implementation {
   //Feeding spot proximity simulation
   event void FSpotProximityTimer.fired() {
 
-    dbg("Boot", "@FSpotProximityTimer fired!");
+    //dbg("Boot", "@FSpotProximityTimer fired!");
     if(proximity){
       //eat
       eat(eating_habit);
@@ -432,6 +440,7 @@ implementation {
   event message_t* ReceiveProximity.receive(message_t* msg, void* payload, uint8_t len){
     dbg("Boot", "@ReceiveProximity: TURNING ON PROXIMITY!\n");
     proximity = TRUE;
+    return msg;
   }
 
   void eat(int food_amount){
@@ -453,22 +462,28 @@ implementation {
   void eat_from_spot(int food_amount, int spot_id){
     
     int value, max;
+
     sprintf(food_filename, "fs%d", spot_id);
-    feeding_spot = fopen(food_filename, "w+");
+    feeding_spot = fopen(food_filename, "r");
 
     fscanf(feeding_spot, "%d %d", &value, &max);
-
+    dbg("Boot", "\n\n eating %d .. %d", value, max);
     if (food_intake >= max_food){
       dbg("Boot", "@eat_from_spot: DID NOT EAT. Achieve daily dosage!");
+      fclose(feeding_spot);
       return;
     }//already had daily dosage!
     
+    fclose(feeding_spot);
+    feeding_spot = fopen(food_filename, "w+");
+
     if(value > food_amount){
-      fprintf(feeding_spot, "%d %d\n", (value -food_amount), max);
+      dbg("Boot", "\n\n eating %d .. %d", (value - food_amount), max);
+      fprintf(feeding_spot, "%d %d", (value - food_amount), max);
       food_intake += food_amount; 
     }else{
       dbg("Boot", "------ Not enough food! in feeding spot %d \n", spot_id);
-      fprintf(feeding_spot, "%d %d\n", 0, max);
+      fprintf(feeding_spot, "%d %d", 0, max);
       food_intake += value; //what was left
     }
     dbg("Boot", "@eat_from_spot: EATING DONE!");
@@ -481,11 +496,70 @@ implementation {
     //with feeding spot if proximity = true
     //to update max food dispensed
     int value, max;
+    
+    dbg("Boot", "@updateFeedingSpot: entered");
     sprintf(food_filename, "fs%d", spot_id);
-    feeding_spot = fopen(food_filename, "w+");
+    feeding_spot = fopen(food_filename, "r");
     fscanf(feeding_spot, "%d %d", &value, &max);
-    fprintf(feeding_spot, "%d %d\n", value, new_max_food);
     fclose(feeding_spot);
+    feeding_spot = fopen(food_filename, "w+");
+    fprintf(feeding_spot, "%d %d\n", new_max_food, new_max_food);
+    fclose(feeding_spot);
+  }
+
+  
+  event message_t* ReceiveUpdateFeedingSpot.receive(message_t* msg, void* payload, uint8_t len){
+    dbg("Boot", "\nola chegou o update %d vs %d\n", len, sizeof(UpdateFeedingSpot));
+    
+    if (len == sizeof(UpdateFeedingSpot)){
+      UpdateFeedingSpot* pkt = (UpdateFeedingSpot*)payload; //cast
+      dbg("Boot", "CHEGOU AQUI\n"); 
+      if(!check_ok_for_broadcast(pkt->msg_id)){
+        //already broadcasted message. dont broadcast again
+        dbg("Boot", "Already broadcast. Discarding....");
+        return msg;
+      } else {
+        add_to_broadcast_checker(pkt->msg_id);
+      }
+
+      if(proximity){ 
+        int id = pkt->spot_id;
+        if(id == 1 || id == 2 || id == 3){
+          updateFeedingSpot(pkt->food_g, 1);
+        }else{
+        if(id == 4 || id == 5 || id == 6){
+          updateFeedingSpot(pkt->food_g, 2);
+        }else{
+        if(id == 7 || id == 8 || id == 9){
+          updateFeedingSpot(pkt->food_g, 3);
+        }}}    
+      }else{
+        dbg("Boot", "broadcasting food SPOT update\n");
+        fwd_broadcast_update_spot(msg);        
+      }
+
+    } else {
+      dbg("Boot", "Something went terribly wrong!");
+    }
+    dbg("Boot", "Cant believe its you\n");
+    return msg;
+  }
+
+  void fwd_broadcast_update_spot(message_t* msg){
+    if(busy){return;}
+    if (call SendUpdateFeedingSpot.send(
+              AM_BROADCAST_ADDR, msg, sizeof(UpdateFeedingSpot)) == SUCCESS){
+      dbg("Boot", "forwarded food SPOT UPDATE message\n");
+      busy = TRUE;
+    }else{
+      dbg("Boot", "WHYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY\n\n");
+    }
+    dbg("Boot", "WHYYYYYYYY\n");
+  }
+
+  event void SendUpdateFeedingSpot.sendDone(message_t* msg, error_t error){
+    dbg("Boot", "@SendUpdateFeedingSpot: done\n");
+    busy = FALSE;
   }
 }
 
