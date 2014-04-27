@@ -13,7 +13,8 @@ from tinyos.tossim.TossimApp import *
 from threading import Thread
 from PingMsg import *
 from UpdateFoodDailyDosage import *
-from GetFoodDailyDosage import *
+from Proximity import *
+#from GetFoodDailyDosage import *
 
 def main(argv):
 
@@ -36,7 +37,8 @@ def main(argv):
 
     # === add debug and log channels ===
     t.addChannel("Boot", sys.stdout)
-    t.addChannel("FoodInfo", open("food_info.txt", "w"))
+    #f = open("sensor_info.txt", "w")
+    #t.addChannel("SensorInfo", f)
 
 
     # === prompt for how many motes ===
@@ -117,15 +119,13 @@ def command_prompt():
             else:
                 print "command usage updateFood <mote_id> <amount>"
                 print "if ( <mote_id> = 0 ) ---> update to all motes"
-        elif cmd[0] == "getFood":
-            print "gonna get food"
-            if len(cmd) == 2:
-                getFood(int(cmd[1]))
-            else:
-                print "command usage getFood <mote_id>"
-                print "if ( <mote_id = 0 ) ---> get from all motes "
         elif cmd[0] == "ping":
             ping()
+        elif cmd[0] == "prox":
+            if len(cmd) < 2:
+                print "wrong input, prox <mote_id>"
+                continue
+            prox(int(cmd[1]))
         elif cmd[0] == "exit":
             print "leaving . . . . goodbye!"
             os._exit(0)
@@ -138,7 +138,7 @@ def command_prompt():
 def updateFood(mote_id, food):
     msg = UpdateFoodDailyDosage()
     msg.set_msg_id(random.randint(0, pow(2,32)- 1))
-    msg.set_new_food_maxkg(food)
+    msg.set_new_food_max(food)
     msg.set_mote_dest(mote_id)
 
     pkt = t.newPacket()
@@ -149,42 +149,52 @@ def updateFood(mote_id, food):
     print "Delivering " + str(msg) + " to 0 at " + str(t.time() +3)
     pkt.deliver(0, t.time() + 3)
 
-def getFood(mote_id):
-    msg = GetFoodDailyDosage()
-    msg.set_mote_dest(mote_id)
-    msg.set_msg_id(random.randint(0, pow(2,32)-1))
-
+def prox(mote_id):
+    msg = Proximity()
     pkt = t.newPacket()
-    pkt.setData(msg.data)
     pkt.setType(msg.get_amType())
-    pkt.setDestination(0)
+    pkt.setDestination(mote_id)
+    print "Delivering " + str(msg) + " to " + str(mote_id) + " at " + str(t.time() + 3)
+    pkt.deliver(mote_id, t.time() + 3)
 
-    print "Delivering " + str(msg) + " to 0 at " + str(t.time() +3)
-    pkt.deliver(0, t.time() + 3)
+
+#def getFood(mote_id):
+#    msg = GetFoodDailyDosage()
+#    msg.set_mote_dest(mote_id)
+#    msg.set_msg_id(random.randint(0, pow(2,32)-1))
+
+ #   pkt = t.newPacket()
+ #   pkt.setData(msg.data)
+ #   pkt.setType(msg.get_amType())
+ #   pkt.setDestination(0)
+
+#    print "Delivering " + str(msg) + " to 0 at " + str(t.time() +3)
+#    pkt.deliver(0, t.time() + 3)
 
 
 def get_state_info(mote_id):
     try:
         mote = nodeList[int(mote_id)]
         status = mote.isOn()
+        busy = mote.getVariable("AnimalC.busy")
         max_food = mote.getVariable("AnimalC.max_food")
         food_intake = mote.getVariable("AnimalC.food_intake")
+        gps_la = mote.getVariable("AnimalC.gps_la")
+        gps_lo = mote.getVariable("AnimalC.gps_lo")
 
-        print "Status: " + str(status) + " | Max_food: " + str(max_food.getData()) + " | food_in: " + str(food_intake.getData())
+        print "Status: " + str(status) + " busy: "+ str(busy.getData())+ " | Max_food: " + str(max_food.getData()) + " | food_in: " + str(food_intake.getData()) + " gps " + str(gps_la.getData()) + " " + str(gps_lo.getData())
     except Exception:
         print "error.... how to use get: get <mote_id>"
 
 def help_me():
     print "- h                                 *** for help"
-    print "- get <mote_id>                     *** get state info of mote"
-    print "- ping                              *** to ping all nodes"
+    print "- get <mote_id> (FOR DEBUG)         *** get state info of mote"
     print "- exit                              *** to exit"
+    print "- read <mote_id>                    *** get last known GPS and food info"
     print "- updateFood <mote_id> <amount>     *** to update daily food. mote_id 0 for all"
-    print "- getFood <mote_id>                 *** to get amount of food consumed. mote_id 0 for all"
-    print "- getPosition <mote_id>             *** to get mound GPS position. mote_id 0 for all "
-    print "- getLastPosition <mote_id>...      *** to get the last know GPS position of select nodes."
     print "- getSpotFood <spot_id>             *** to get amount of food left in feeding spot. 0 to get all."
     print "- updateSpotFood <spot_id> <amount> *** to update the spots food. 0 for all."
+    print "- prox <mote_id>                    *** turn on proximity simulation to feeding spot."
 
 
 def ping():
