@@ -21,6 +21,7 @@ Proximity.py: Animal.h
 	mig python -target=$(PLATFORM) $(CFLAGS) -python-classname=Proximity Animal.h Proximity -o $@
 
 
+
 #GetFoodResponse.py: Animal.h
 #	mig python -target=$(PLATFORM) $(CFLAGS) -python-classname=GetFoodResponse Animal.h GetFoodResponse -o $@
 
