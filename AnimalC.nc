@@ -118,7 +118,7 @@ implementation {
       if(TOS_NODE_ID != 0){
         call GpsTimer.startPeriodic(50000);
         call FSpotProximityTimer.startPeriodic(90000);
-        call BroadcastTimer.startPeriodic(200000 * (10 - TOS_NODE_ID));
+        call BroadcastTimer.startPeriodic(100000 * (10 - TOS_NODE_ID));
       }
     } else {
       //retry
@@ -134,11 +134,12 @@ implementation {
   
 
   event void SendPing.sendDone(message_t* msg, error_t error){
-    dbg("Boot", "Sending packet is done. \n");
+    writeLog("@Ping: Sending packet is done. \n");
     if (&packet == msg) {
-      dbg("Boot", "No errors accured, Send is available\n");
+      writeLog("@Ping: No errors accured, Send is available");
       //busy = FALSE;
       //pthread_mutex_unlock(&count_mutex);
+      busy = FALSE;
     }
   }
   /*event void SendFoodQuery.sendDone(message_t* msg, error_t error){
@@ -152,7 +153,7 @@ implementation {
     dbg("Boot", "unlock mutex");
   }*/
   event void SendFoodUpdate.sendDone(message_t* msg, error_t error){
-    dbg("Boot", "Sending Food Update packet is done. \n");
+    writeLog("Sending Food Update packet is done. ");
     //if (&packet == msg) {
       //dbg("Boot", "No errors accured, Send is available\n");
       busy = FALSE;
@@ -240,28 +241,31 @@ implementation {
     
     if (len == sizeof(UpdateFoodDailyDosage)){
       UpdateFoodDailyDosage* pkt = (UpdateFoodDailyDosage*)payload; //cast
-      dbg("Boot", "CHEGOU AQUI\n"); 
+      writeLog("@ReceiveFoodUpdate; arrived"); 
       if(!check_ok_for_broadcast(pkt->msg_id)){
         //already broadcasted message. dont broadcast again
-        dbg("Boot", "Already broadcast. Discarding....");
+        writeLog("@ReceiveFoodUpdate: Already broadcast. Discarding....");
         return msg;
       } else {
         add_to_broadcast_checker(pkt->msg_id);
       }
-      dbg("Boot", "here here here\n");
+
       if(pkt->mote_dest == 0){ //if 0, update mine and broadcast (save id to avoid rebroadcast)
         max_food = pkt->new_food_max;
         broadcastFoodUpdate(msg); 
+        writeLog("@ReceiveFoodUpdate: mote_dest = 0, update and re-broadcast");
         
       } else {
         if(pkt->mote_dest == TOS_NODE_ID){ //if its me
+          writeLog("@ReceiveFoodUpdate: Message to me, not rebroadcasting");
           max_food = pkt->new_food_max;
         }else{
+          writeLog("@ReceiveFoodUpdate: Not to me and not 0, re-broadcasting");
           broadcastFoodUpdate(msg);
         }
       }
     } else {
-      dbg("Boot", "Something went terribly wrong!");
+      writeLog("Something went terribly wrong!");
     }
     return msg;
   }
@@ -269,11 +273,11 @@ implementation {
 
   //aux functions
   void broadcastFoodUpdate(message_t* msg){
-    dbg("Boot", "broadcasting food update\n");
+    writeLog("broadcasting food update");
     if(busy){return;}
     if (call SendFoodUpdate.send(
          AM_BROADCAST_ADDR, msg, sizeof(UpdateFoodDailyDosage)) == SUCCESS){
-      dbg("Boot", "forwarded food query message");
+      writeLog("forwarded food query message");
       busy = TRUE;
     }
   }
@@ -353,7 +357,7 @@ implementation {
   event void BroadcastTimer.fired() {
   
     //broadcast readings
-    dbg("Boot", "@BroadcastTimer: it fired!\n");
+    writeLog("@BroadcastTimer: it fired!");
     broadcast_animal_info(); 
   }
 
@@ -368,7 +372,7 @@ implementation {
     ai_pkt->mote_id = TOS_NODE_ID;
     if (call SendAnimalInfo.send(
           AM_BROADCAST_ADDR, &packet, sizeof(AnimalInfo)) == SUCCESS){
-      dbg("Boot", "success broadcast AnimalInfo\n");
+      writeLog("success broadcast AnimalInfo");
       busy = TRUE;
       ai_pkt = 0;
     }
@@ -377,7 +381,7 @@ implementation {
   task void fwd_broadcast_animal_info(){
     //pthread_mutex_lock(&count_mutex);
     if(busy){return;}
-    dbg("Boot", "@fwd_broadcast_animal_info: entered");
+    writeLog("@fwd_broadcast_animal_info: entered");
     ai_pkt = (AnimalInfo*)call Packet.getPayload(&packet, sizeof(AnimalInfo));
     ai_pkt->msg_id = animal_info_packet->msg_id;
     ai_pkt->gps_la = animal_info_packet->gps_la;
@@ -386,7 +390,7 @@ implementation {
     ai_pkt->mote_id = animal_info_packet->mote_id;
     if(call SendAnimalInfo.send(
           AM_BROADCAST_ADDR, &packet, sizeof(AnimalInfo)) == SUCCESS){
-      dbg("Boot", "@fwd_broadcast_animal_info: SUCCESS\n");
+      writeLog("@fwd_broadcast_animal_info: SUCCESS");
       busy = TRUE;
       ai_pkt = 0;
     }
@@ -394,7 +398,7 @@ implementation {
 
   event void SendAnimalInfo.sendDone(message_t* msg, error_t error){
     
-    dbg("Boot", "@SendAnimalInfo.sendDone: entering\n");
+    writeLog("@SendAnimalInfo.sendDone: entering");
     if (&packet == msg){
       //unlock mutex... ?
       //dbg("Boot", "@SendAnimalInfo.sendDone ----\n");
@@ -404,31 +408,33 @@ implementation {
   }
   
   event message_t* ReceiveAnimalInfo.receive(message_t* msg, void* payload, uint8_t len){
-
+    char str[200];
     if (len == sizeof(AnimalInfo)){
       AnimalInfo* pkt = (AnimalInfo*)payload; //cast
-      dbg("Boot", "@AnimalInfo: msg_id:%d mote_id:%d\n", pkt->msg_id, pkt->mote_id); 
+      //dbg("Boot", "@AnimalInfo: msg_id:%d mote_id:%d\n", pkt->msg_id, pkt->mote_id); 
+      sprintf(str, "@AnimalInfo: msg_id:%d mote_id:%d\n", pkt->msg_id, pkt->mote_id); 
+      writeLog(str);
       if(!check_ok_for_broadcast(pkt->msg_id) || pkt->mote_id == TOS_NODE_ID){
         //already broadcasted message. dont broadcast again
-        dbg("Boot", "@AnimalInfo: Already broadcast. Discarding....\n");
+        writeLog("@AnimalInfo: Already broadcast. Discarding....");
         return msg;
       } else {
         add_to_broadcast_checker(pkt->msg_id);
       }
 
       if(TOS_NODE_ID == 0){
-        dbg("Boot", "@AnimalInfo: REACHED SERVER\n");
+        writeLog("@AnimalInfo: REACHED SERVER, im 0");
         sensor_file = fopen("sensor_info.txt", "a+"); 
         fprintf(sensor_file, "node_id: %d || GPS-la: %d lo: %d || food_eaten: %d || msg_id: %d\n", 
             pkt->mote_id, pkt->gps_la, pkt->gps_lo, pkt->food_g, pkt->msg_id);
         fclose(sensor_file);
       }else{
-        dbg("Boot", "@AnimalInfo: calling post task\n");
+        writeLog("@AnimalInfo: calling post task fwd ");
         animal_info_packet = pkt;
         post fwd_broadcast_animal_info();
       }
     } else {
-      dbg("Boot", "Something went terribly wrong!\n");
+      dbg("Boot", "Something went terribly wrong!");
     }
     return msg;
   }
@@ -444,7 +450,8 @@ implementation {
   }
 
   event message_t* ReceiveProximity.receive(message_t* msg, void* payload, uint8_t len){
-    dbg("Boot", "@ReceiveProximity: TURNING ON PROXIMITY!\n");
+    //dbg("Boot", "@ReceiveProximity: TURNING ON PROXIMITY!\n");
+    writeLog("@ReceiveProximity: TURNING ON PROXIMITY!");
     if(proximity){
       proximity = FALSE;
     }else{
@@ -472,14 +479,19 @@ implementation {
   void eat_from_spot(int food_amount, int spot_id){
     
     int value, max;
+    char str[200], str1[200];
 
     sprintf(food_filename, "fs%d", spot_id);
     feeding_spot = fopen(food_filename, "r");
 
     fscanf(feeding_spot, "%d %d", &value, &max);
-    dbg("Boot", "\n\n eating %d .. %d", value, max);
+    //dbg("Boot", "\n\n eating %d .. %d", value, max);
+    sprintf(str, "@eat_from_spot: eating %d of %d in max: %d", food_amount, value, max);
+    writeLog(str);
     if (food_intake >= max_food){
-      dbg("Boot", "@eat_from_spot: DID NOT EAT. Achieve daily dosage!");
+      //dbg("Boot", "@eat_from_spot: DID NOT EAT. Achieve daily dosage!");
+      sprintf(str, "@eat_from_spot: DID NOT EAT. Achieved daily max dosage!");
+      writeLog(str);
       fclose(feeding_spot);
       return;
     }//already had daily dosage!
@@ -488,11 +500,15 @@ implementation {
     feeding_spot = fopen(food_filename, "w+");
 
     if(value > food_amount){
-      dbg("Boot", "\n\n eating %d .. %d", (value - food_amount), max);
+      //dbg("Boot", "\n\n eating %d .. %d", (value - food_amount), max);
+      sprintf(str1, "@eat_from_spot: eating %d .. %d", (value - food_amount), max);
+      writeLog(str1);
       fprintf(feeding_spot, "%d %d", (value - food_amount), max);
       food_intake += food_amount; 
     }else{
-      dbg("Boot", "------ Not enough food! in feeding spot %d \n", spot_id);
+      //dbg("Boot", "------ Not enough food! in feeding spot %d \n", spot_id);
+      sprintf(str1, "@eat_from_spot: Not enough food in feeding spot %d", spot_id);
+      writeLog(str1);
       fprintf(feeding_spot, "%d %d", 0, max);
       food_intake += value; //what was left
     }
@@ -506,8 +522,12 @@ implementation {
     //with feeding spot if proximity = true
     //to update max food dispensed
     int value, max;
+    char str[200];
     
-    dbg("Boot", "@updateFeedingSpot: entered");
+    //dbg("Boot", "@updateFeedingSpot: entered");
+    sprintf(str, "@updateFeedingSpot new_max: %d spot_id: %d", new_max_food, spot_id);
+    writeLog(str);
+
     sprintf(food_filename, "fs%d", spot_id);
     feeding_spot = fopen(food_filename, "r");
     fscanf(feeding_spot, "%d %d", &value, &max);
@@ -519,17 +539,18 @@ implementation {
 
   
   event message_t* ReceiveUpdateFeedingSpot.receive(message_t* msg, void* payload, uint8_t len){
-    //char str[200];
-    //sprintf(str, "@ReceiveUpdateFeedingSpot.receive(): msg arrived");
+    char str[200];
+    char str2[200];
+    sprintf(str, "@ReceiveUpdateFeedingSpot.receive(): msg arrived");
     //dbg("Boot", "\nola chegou o update %d vs %d\n", len, sizeof(UpdateFeedingSpot));
-    //writeLog(str);
+    writeLog(str);
     if (len == sizeof(UpdateFeedingSpot)){
       UpdateFeedingSpot* pkt = (UpdateFeedingSpot*)payload; //cast
       if(!check_ok_for_broadcast(pkt->msg_id)){
         //already broadcasted message. dont broadcast again
         //dbg("Boot", "Already broadcast. Discarding....");
-        //sprintf(str, "@ReceiveUpdateFedingSpot.receive: Already broadcast. Discarding..");
-        //writeLog(str);
+        sprintf(str, "@ReceiveUpdateFedingSpot.receive: Already broadcast. Discarding..");
+        writeLog(str);
         return msg;
       } else {
         add_to_broadcast_checker(pkt->msg_id);
@@ -548,7 +569,9 @@ implementation {
           updateFeedingSpot(pkt->food_g, 3);
         }}}    
       }else{
-        dbg("Boot", "broadcasting food SPOT update\n");
+        //dbg("Boot", "broadcasting food SPOT update\n");
+        sprintf(str2, "@ReceiveUpdateFoodSpot.receive(): forwarding!");
+        writeLog(str2);
         fwd_broadcast_update_spot(msg);        
       }
 
@@ -559,25 +582,25 @@ implementation {
   }
 
   void fwd_broadcast_update_spot(message_t* msg){
-    //char str[200];
+    char str[200];
     if(busy){return;}
     if (call SendUpdateFeedingSpot.send(
               AM_BROADCAST_ADDR, msg, sizeof(UpdateFeedingSpot)) == SUCCESS){
       //dbg("Boot", "forwarded food SPOT UPDATE message\n");
-      //sprintf(str, "@fwd_broadcast_update_spot: send == SUCCES, BUSY = TRUE");
-      //writeLog(str);
+      sprintf(str, "@fwd_broadcast_update_spot: send == SUCCES, BUSY = TRUE");
+      writeLog(str);
       busy = TRUE;
     }else{
-      //dbg("Boot", "WHYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY\n\n");
+      dbg("Boot", "WHYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY\n\n");
     }
     //dbg("Boot", "WHYYYYYYYY\n");
   }
 
   event void SendUpdateFeedingSpot.sendDone(message_t* msg, error_t error){
     //dbg("Boot", "@SendUpdateFeedingSpot: done\n");
-    //char str[200];
-    //sprintf(str, "@SendUpdateFeedingSpot: done. busy = false");
-    //writeLog(str);
+    char str[200];
+    sprintf(str, "@SendUpdateFeedingSpot: done. busy = false");
+    writeLog(str);
     busy = FALSE;
   }
   
