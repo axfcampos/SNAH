@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013) (format=pdflatex 2013.11.30)  2 MAY 2014 18:51
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013) (format=pdflatex 2013.11.30)  2 MAY 2014 18:59
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -783,40 +783,51 @@ Underfull \hbox (badness 1509) in paragraph at lines 282--283
 Package babel Info: Redefining portuges shorthand "|
 (babel)             in language  on input line 285.
 
-Underfull \hbox (badness 10000) in paragraph at lines 296--299
+Underfull \hbox (badness 10000) in paragraph at lines 289--290
+[]\OT1/ptm/m/n/10 Considero que a qua-li-dade e quan-ti-dade de
+ []
+
+
+Underfull \hbox (badness 1043) in paragraph at lines 289--290
+\OT1/ptm/m/n/10 documenta[][]ao do \OT1/ptm/m/it/10 tinyOS \OT1/ptm/m/n/10 foi 
+algo sur-pre-ende pela ne-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 295--298
 \OT1/ptm/m/n/10 http://nesl.ee.ucla.edu/fw/torres/home/projects/tossim
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 301--304
+Underfull \hbox (badness 10000) in paragraph at lines 300--303
 \OT1/ptm/m/n/10 http://www.memsic.com/userfiles/files/Datasheets/
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 306--309
+Underfull \hbox (badness 10000) in paragraph at lines 305--308
 \OT1/ptm/m/n/10 http://www.openautomation.net/uploadsproductos/
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 311--314
+Underfull \hbox (badness 10000) in paragraph at lines 310--313
 \OT1/ptm/m/n/10 http://docs.tinyos.net/tinywiki/index.php/
  []
 
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 318.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 317.
 Package babel Info: Redefining portuges shorthand "|
-(babel)             in language  on input line 318.
+(babel)             in language  on input line 317.
 Package babel Info: Redefining portuges shorthand "|
-(babel)             in language  on input line 318.
+(babel)             in language  on input line 317.
 [5
 
 ]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 318.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 317.
  (./reportASE.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 318.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 318.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 317.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 317.
 Package rerunfilecheck Info: File `reportASE.out' has not changed.
 (rerunfilecheck)             Checksum: E9B8F12B56F4D98D90B58842D8707121;754.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 318.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 317.
  ) 
 Here is how much of TeX's memory you used:
  9959 strings out of 493315
@@ -833,7 +844,7 @@ live/2013/texmf-dist/fonts/type1/urw/courier/ucrr8a.pfb></usr/local/texlive/201
 3/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/local/texlive/2013/texmf-di
 st/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive/2013/texmf-dist/fonts/t
 ype1/urw/times/utmri8a.pfb>
-Output written on reportASE.pdf (5 pages, 1750614 bytes).
+Output written on reportASE.pdf (5 pages, 1750975 bytes).
 PDF statistics:
  201 PDF objects out of 1000 (max. 8388607)
  180 compressed objects within 2 object streams
