@@ -37,7 +37,9 @@ def main(argv):
     print "+++ "
 
     # === add debug and log channels ===
+    #ff = open("logs.txt", "w+")
     t.addChannel("Boot", sys.stdout)
+    #t.addChannel("Boot", ff)
     #f = open("sensor_info.txt", "w")
     #t.addChannel("SensorInfo", f)
 
@@ -60,8 +62,8 @@ def main(argv):
         print "=== Creating and starting node %d " % x
         m = t.getNode(x)
         nodeList.append(m)
-        m.turnOn()
-        #m.bootAtTime((31 + t.ticksPerSecond() / 10) * x + 1)
+        # m.turnOn()
+        m.bootAtTime((31 + t.ticksPerSecond() / 10) * x + 1)
         print " - its on!"
         # add noise to node
         f = open("noise.txt", "r")
@@ -71,9 +73,11 @@ def main(argv):
                 m.addNoiseTraceReading(int(s))
         m.createNoiseModel()
         print " - added noise "
-        print "+++ Node %d start complete! " % x
+        print "+++ Node %d start complete! %d" % (x, len(nodeList))
+        f.close()
 
 
+    print "what"
     # === start prompt for user commands ===
     prompt_thr = Thread(target=command_prompt, args=())
     prompt_thr.start()
@@ -143,8 +147,21 @@ def command_prompt():
             break
         elif cmd[0] == "h":
             help_me()
+        elif cmd[0] == "read":
+            if len(cmd) != 2:
+                print "wrong usage, read <mote_id>"
+                continue
+            read(int(cmd[1]))
         else:
             print "wrong input. type 'h' for help"
+
+
+def read(mote_id):
+    sens = open("sensor_info.txt")
+    for l in sens:
+        if l.find("node_id: " + str(mote_id)) > -1:
+            print l,
+            sys.stdout.write('')
 
 def updateFood(mote_id, food):
     msg = UpdateFoodDailyDosage()
@@ -231,6 +248,7 @@ def help_me():
     print "- getSpotFood <spot_id>             *** to get amount of food left in feeding spot. 0 to get all."
     print "- updateSpotFood <spot_id> <amount> *** to update the spots food. 0 for all."
     print "- prox <mote_id>                    *** turn on proximity simulation to feeding spot."
+
 
 
 def ping():

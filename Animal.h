@@ -51,7 +51,7 @@ typedef nx_struct UpdateFeedingSpot {
 typedef nx_struct UpdateFoodDailyDosage{
   nx_uint32_t msg_id; //to denie rebroadcast
   nx_uint16_t mote_dest; //if 0 deliver to all
-  nx_uint8_t new_food_max; //new max amount of daily food 
+  nx_uint16_t new_food_max; //new max amount of daily food 
 } UpdateFoodDailyDosage;
 
 
