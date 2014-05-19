@@ -1,0 +1,11 @@
+#### Comparação Projecto 9 com Projecto 8 ####
+
+Descrição da arquitectura da rede e funcionamento do projeto está muito vaga. 
+
+Não concordo com a decisão de o servidor proactivamente enviar mensagens para a rede para saber informação sobre os nós muitos com a ausencia de um protocolo de encaminhamento (assumindo que o que optaram foi todos os nós repetem as mensagens que recebem para encaminhar). Com o sugerido no enunciado (10000 nós) levaria a uma tempestade de mensagens a inundar a rede se o servidor fizesse a query: getPos() ou getFoodLeft(). A mensagem inicial seria repetida 10000 vezes e seria gerada uma resposta para cada nós que por sua vez cada uma seria repetidada 10000 vezes. ou seja sensivelmente 10000ˆ2 mensagens.
+
+Considero que deveria haver uma descrição detalhada da estrutura das mensagens enviada na rede, pois é um ponto importante visto que se deve minizar ao máximo o tamanho da mensagem enviado apenas o essencial para poupar energia. 
+
+A simulação do uso do módulo GPS está ausente.
+
+Não é explicada a interação entre os nós e os feeding spots nem qualquer tipo de específicação.
