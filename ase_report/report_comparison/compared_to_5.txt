@@ -1,9 +1,20 @@
 #### Comparação Projecto 9 and Projecto 5 ####
 
-A arquitectura do sistema está muito vaga. Focando levemente nas componentes de hardware e nada em software. É deixado em aberto o que suporta o funcionamento dos feeding spots.
+A arquitectura do sistema está muito vaga. Focando levemente nas componentes de hardware 
+e nada em software. É deixado em aberto o que suporta o funcionamento dos feeding spots.
 
-Fiquei algo confuso na explicação de como a localização funciona. Percebo o inteiro que identifica o local específico, mas como é que o nó sabe em que local está? Consideraram o uso de um módulo com GPS?
+Fiquei algo confuso na explicação de como a localização funciona. Percebo o inteiro que 
+identifica o local específico, mas como é que o nó sabe em que local está? Consideraram 
+o uso de um módulo com GPS?
 
-Outra questão: é feita disseminação periódica? Ou os nós apenas revelam a sua informação ao receber uma mensagem a pedir a mesma? Quando ao protocolo fico com a ideia é simplesmente broadcast de tudo com controlo de repetição. Não é específicado uma maneira de lidar com os nós que se afastam da rede principal.
+Outra questão: é feita disseminação periódica? Ou os nós apenas revelam a sua informação 
+ao receber uma mensagem a pedir a mesma? Quando ao protocolo fico com a ideia é simplesmente 
+broadcast de tudo com controlo de repetição. Não é específicado uma maneira de lidar com os 
+nós que se afastam da rede principal.
 
-Em suma, fiquei com algumas dúvidas no relatório. Em comparação com o meu projecto faço uso do mesmo protocolo de disseminação de mensagens mas fujo ao risco de uma tempestade causada por demasiadas queries pelo servidor à rede fazendo com que toda a informação necessária seja entregue ao servidor periodicamente. Sendo assim as únicas mensagens que o servidor/laptop tem que enviar para a rede são de configuração/alteração de parametros de comida e afins que não suscitam uma resposta.
+Em suma, fiquei com algumas dúvidas no relatório. Em comparação com o meu projecto faço uso 
+do mesmo protocolo de disseminação de mensagens mas fujo ao risco de uma tempestade causada 
+por demasiadas queries pelo servidor à rede fazendo com que toda a informação necessária seja 
+entregue ao servidor periodicamente. Sendo assim as únicas mensagens que o servidor/laptop tem 
+que enviar para a rede são de configuração/alteração de parametros de comida e afins que não 
+suscitam uma resposta.
