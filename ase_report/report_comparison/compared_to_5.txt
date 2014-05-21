@@ -5,6 +5,8 @@ e nada em software. É deixado em aberto o que suporta o funcionamento dos feedi
 Fiquei algo confuso na explicação de como a localização funciona. Na demonstração ficou esclarecido o uso da RF para 
 detetar a se estaria perto de um certo sitio.
 
+A minha solução foi o uso de GPS o que leva a um consumo mais elevado de energia.
+
 Em suma, fiquei com algumas dúvidas no relatório. Em comparação com o meu projecto faço uso 
 do mesmo protocolo de disseminação de mensagens (em broadcast) mas fujo ao risco de uma tempestade causada 
 por demasiadas queries pelo servidor à rede fazendo com que toda a informação necessária seja 
